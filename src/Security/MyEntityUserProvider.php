@@ -30,15 +30,14 @@ class MyEntityUserProvider extends EntityUserProvider implements AccountConnecto
             // TODO: Create new user
             if (null === $user = $this->findUser(['email' => $email])){
                 $user = new User();
-                $user->$setterId($username);
                 $user->setIsVerified(true);
                 $user->setEmail($response->getEmail());
                 $user->setPassword(md5(uniqid('', true)));
             }
             else{
-                $user->$setterId($username);
                 $user->setIsVerified(true);
             }
+            $user->$setterId($username);
         }
 
         $user->$setterAccessToken($response->getAccessToken());
