@@ -25,23 +25,25 @@ class MyEntityUserProvider extends EntityUserProvider implements AccountConnecto
 
         // unique integer
         $username = $response->getUsername();
-        if (null === $user = $this->findUser(array($this->properties[$resourceOwnerName] => $username))) {
-            // TODO: Create the user
-            $user = new User();
-
-            $user->setEmail($response->getEmail());
-
-            $user->$setterId($username);
-            $user->$setterAccessToken($response->getAccessToken());
-
-            $this->em->persist($user);
-            $this->em->flush();
-
-            return $user;
+        $email = $response->getEmail();
+        if (null === $user = $this->findUser([$this->properties[$resourceOwnerName] => $username])) {
+            // TODO: Create new user
+            if (null === $user = $this->findUser(['email' => $email])){
+                $user = new User();
+                $user->$setterId($username);
+                $user->setIsVerified(true);
+                $user->setEmail($response->getEmail());
+                $user->setPassword(md5(uniqid('', true)));
+            }
+            else{
+                $user->$setterId($username);
+                $user->setIsVerified(true);
+            }
         }
-        // JUST FOR FACEBOOK
-        $user->setFacebookAccessToken($response->getAccessToken());
 
+        $user->$setterAccessToken($response->getAccessToken());
+        $this->em->persist($user);
+        $this->em->flush();
         return $user;
     }
 
